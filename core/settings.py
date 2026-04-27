@@ -1,5 +1,5 @@
 ﻿import os
-import dj_database_url # تأكد من وجود هذه المكتبة
+import dj_database_url
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +38,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates','DIRS': [],'APP_DIRS': True,'OPTIONS': {'context_processors': ['django.template.context_processors.debug','django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages']}}]
 WSGI_APPLICATION = 'core.wsgi.application'
 
-# --- تعديل قاعدة البيانات الاستراتيجي ---
+# --- إعداد قاعدة البيانات الاستراتيجي المحسن ---
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -46,12 +46,14 @@ DATABASES = {
     }
 }
 
-# إذا كان الرابط موجوداً (أونلاين على Render)، استخدم PostgreSQL
-db_from_env = dj_database_url.config(
-    default='postgresql://psycap_db_user:QfYZo3Eth59RCCFSEXIASJXHNA7If6NP@dpg-d7nteureo5us73fisjf0-a.frankfurt-postgres.render.com/psycap_db',
-    conn_max_age=600
+# جلب رابط قاعدة البيانات من Render وتفعيل التشفير SSL
+db_url = os.environ.get('DATABASE_URL', 'postgresql://psycap_db_user:QfYZo3Eth59RCCFSEXIASJXHNA7If6NP@dpg-d7nteureo5us73fisjf0-a.frankfurt-postgres.render.com/psycap_db')
+
+DATABASES['default'] = dj_database_url.config(
+    default=db_url,
+    conn_max_age=600,
+    ssl_require=True # هذا السطر ضروري جداً لـ Render
 )
-DATABASES['default'].update(db_from_env)
 # ---------------------------------------
 
 STATIC_URL = 'static/'
