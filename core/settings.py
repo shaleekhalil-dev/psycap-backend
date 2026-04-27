@@ -1,8 +1,9 @@
 ﻿import os
+import dj_database_url # تأكد من وجود هذه المكتبة
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = 'psycap-secure-key-shalee-khalil'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'psycap-secure-key-shalee-khalil')
 DEBUG = True 
 ALLOWED_HOSTS = ['*']
 
@@ -19,7 +20,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # انقلناه للأعلى تماماً لضمان فك الحظر
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -30,14 +31,28 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# إعدادات الـ CORS لضمان الاتصال مع Vercel
 CORS_ALLOW_ALL_ORIGINS = True 
 CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'core.urls'
 TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates','DIRS': [],'APP_DIRS': True,'OPTIONS': {'context_processors': ['django.template.context_processors.debug','django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages']}}]
 WSGI_APPLICATION = 'core.wsgi.application'
-DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3','NAME': BASE_DIR / 'db.sqlite3'}}
+
+# --- تعديل قاعدة البيانات الاستراتيجي ---
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+# إذا كان الرابط موجوداً (أونلاين على Render)، استخدم PostgreSQL
+db_from_env = dj_database_url.config(
+    default='postgresql://psycap_db_user:QfYZo3Eth59RCCFSEXIASJXHNA7If6NP@dpg-d7nteureo5us73fisjf0-a.frankfurt-postgres.render.com/psycap_db',
+    conn_max_age=600
+)
+DATABASES['default'].update(db_from_env)
+# ---------------------------------------
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
